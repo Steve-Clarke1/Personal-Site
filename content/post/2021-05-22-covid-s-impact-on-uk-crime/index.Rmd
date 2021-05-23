@@ -1,0 +1,120 @@
+---
+title: Covid's Impact on UK Crime
+author: Steve Clarke
+date: '2021-05-22'
+slug: covid-s-impact-on-uk-crime
+categories:
+  - R
+tags:
+  - R Markdown
+output:
+  html_document:
+    code_folding: hide
+---
+
+```{r setup, include=FALSE}
+rm(list=ls())
+
+knitr::opts_chunk$set(echo = TRUE)
+
+library(DBI)
+library(tidyverse)
+library(lubridate)
+library(plotly)
+
+vseg <- function(x0 = 0, x1 = 1, color = "red") {
+  list(type=rect, 
+                        x0=x0, 
+                        x1=x1, 
+                        y0=0, 
+                        y1=1, 
+                        yref = "paper",
+                        fillcolor=color, 
+       line = list(color = color),
+                        layer='below')
+}
+
+```
+
+```{r}
+files <- list.files(path = "C:\\Users\\humbu_000\\Downloads\\Crime Data", include.dirs = TRUE, full.names = TRUE, recursive = TRUE, pattern="*.csv", ignore.case = TRUE)
+
+crime_data <- map_dfr(.x = files, .f = read_csv, col_types = c("_c_cddc__cc_"), progress = FALSE)
+```
+
+
+# Burglary, Robbery and Shoplifting
+
+Blah Blah Blah
+
+## Number of Crimes
+```{r fig.height=6, fig.width=9}
+crime_data %>% 
+  filter(`Crime type` %in% c("Burglary", "Robbery", "Shoplifting")) %>%
+  group_by(Month, `Crime type`) %>% 
+  summarise(NumCrimes = n()) %>% 
+  ungroup() %>%
+  mutate(Month = ymd(paste0(Month, "-01"))) %>% 
+  plot_ly(x = ~Month, y = ~NumCrimes, color = ~`Crime type`, type = "scatter", mode = "lines", line = list(shape = "hv")) %>%
+  layout(shapes = list(vseg(ymd("2020-03-23"), ymd("2020-05-30"), "#FFA2A2"),
+                       vseg(ymd("2020-05-30"), ymd("2020-06-15"), "#FFC1A2"),
+                       vseg(ymd("2020-06-15"), ymd("2020-07-04"), "#FFE7A2"),
+                       vseg(ymd("2020-09-14"), ymd("2020-11-05"), "#FFC1A2"),
+                       vseg(ymd("2020-11-05"), ymd("2020-12-02"), "#FFA2A2"),
+                       vseg(ymd("2020-12-02"), ymd("2021-01-06"), "#FFC1A2"),
+                       vseg(ymd("2021-01-06"), ymd("2021-03-08"), "#FFA2A2"),
+                       vseg(ymd("2021-03-08"), ymd("2021-04-01"), "#FFC1A2")), 
+         yaxis = list(tickformat = "%", showgrid = F), 
+         xaxis = list(showgrid = F))
+```
+
+## Year on Year Percentage Change
+```{r fig.height=6, fig.width=9}
+crime_data %>% 
+  filter(`Crime type` %in% c("Burglary", "Robbery", "Shoplifting")) %>%
+  group_by(Month, `Crime type`) %>% 
+  summarise(NumCrimes = n()) %>% 
+  ungroup() %>%
+  mutate(Month = ymd(paste0(Month, "-01")), 
+         LastYear = Month-years(1)) %>% 
+  left_join(x = ., y = ., 
+            by = c("LastYear" = "Month", "Crime type" = "Crime type")) %>%
+  filter(!is.na(NumCrimes.y)) %>%
+  select(Month, CrimeType = `Crime type`, NumCrimes = NumCrimes.x, LastYearNumCrimes = NumCrimes.y) %>%
+  mutate(YearOnYearDiff = NumCrimes-LastYearNumCrimes, 
+         YearOnYearDiffPcnt = YearOnYearDiff/LastYearNumCrimes) %>%
+  plot_ly(x = ~Month, y = ~YearOnYearDiffPcnt, color = ~CrimeType, type = "scatter", mode = "lines", line = list(shape = "hv")) %>%
+  layout(shapes = list(vseg(ymd("2020-03-23"), ymd("2020-05-30"), "#FFA2A2"),
+                       vseg(ymd("2020-05-30"), ymd("2020-06-15"), "#FFC1A2"),
+                       vseg(ymd("2020-06-15"), ymd("2020-07-04"), "#FFE7A2"),
+                       vseg(ymd("2020-09-14"), ymd("2020-11-05"), "#FFC1A2"),
+                       vseg(ymd("2020-11-05"), ymd("2020-12-02"), "#FFA2A2"),
+                       vseg(ymd("2020-12-02"), ymd("2021-01-06"), "#FFC1A2"),
+                       vseg(ymd("2021-01-06"), ymd("2021-03-08"), "#FFA2A2"),
+                       vseg(ymd("2021-03-08"), ymd("2021-04-01"), "#FFC1A2")), 
+         yaxis = list(tickformat = "%", showgrid = F), 
+         xaxis = list(showgrid = F))
+
+crime_data %>% 
+  filter(`Crime type` %in% c("Burglary", "Robbery", "Shoplifting")) %>%
+  group_by(Month, `Crime type`) %>% 
+  summarise(NumCrimes = n()) %>% 
+  ungroup() %>%
+  mutate(Month = ymd(paste0(Month, "-15")), LastYear = Month-years(1)) %>% 
+  left_join(x = ., y = ., by = c("LastYear" = "Month", "Crime type" = "Crime type")) %>%
+  filter(!is.na(NumCrimes.y)) %>%
+  select(Month, CrimeType = `Crime type`, NumCrimes = NumCrimes.x, LastYearNumCrimes = NumCrimes.y) %>%
+  mutate(YearOnYearDiff = NumCrimes-LastYearNumCrimes, YearOnYearDiffPcnt = YearOnYearDiff/LastYearNumCrimes) %>%
+  plot_ly(x = ~Month, y = ~YearOnYearDiffPcnt, color = ~CrimeType, type = "scatter", mode = "lines", line = list(shape = "spline")) %>%
+  layout(shapes = list(vseg(ymd("2020-03-23"), ymd("2020-05-30"), "#FFA2A2"),
+                       vseg(ymd("2020-05-30"), ymd("2020-06-15"), "#FFC1A2"),
+                       vseg(ymd("2020-06-15"), ymd("2020-07-04"), "#FFE7A2"),
+                       vseg(ymd("2020-09-14"), ymd("2020-11-05"), "#FFC1A2"),
+                       vseg(ymd("2020-11-05"), ymd("2020-12-02"), "#FFA2A2"),
+                       vseg(ymd("2020-12-02"), ymd("2021-01-06"), "#FFC1A2"),
+                       vseg(ymd("2021-01-06"), ymd("2021-03-08"), "#FFA2A2"),
+                       vseg(ymd("2021-03-08"), ymd("2021-04-01"), "#FFC1A2")), 
+         yaxis = list(tickformat = "%", showgrid = F), 
+         xaxis = list(showgrid = F))
+```
+

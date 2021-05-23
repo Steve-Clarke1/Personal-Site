@@ -18,6 +18,8 @@ menu:
       url: /about/
     - name: CV
       url: /cv/
+    - name: Crime Dashboard
+      url: https://steve-clarke.shinyapps.io/UK_Crime_Location_Comparer/
     - name: GitHub
       url: https://github.com/Steve-Clarke1
     - name: LinkedIn

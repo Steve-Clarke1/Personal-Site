@@ -15,8 +15,8 @@ test
 *Highways England*, Nov 2016–Feb 2018
 
 # Education
-**PhD** Civil Engineering, *University of Notthingam*, Completed 2021 <br>
-**MEng (Hons)** 2:1 Civil Engineering, *University of Notthingam*, Graduated 2012
+**PhD** Civil Engineering, *University of Nottingham*, Completed 2021 <br>
+**MEng (Hons)** 2:1 Civil Engineering, *University of Nottingham*, Graduated 2012
 
 ### PhD Thesis
 **Title:** *Railway Track Asset Management Modelling* <br>
